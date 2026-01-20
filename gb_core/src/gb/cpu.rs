@@ -1,4 +1,4 @@
-use std::ptr::addr_of;
+use std::{intrinsics::wrapping_add, ptr::addr_of, result};
 
 use bitflags::bitflags;
 
@@ -122,6 +122,216 @@ impl Cpu {
                 
             }
 
+            Instruction::INC(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        let (value, did_overflow) = self.registers.a_reg.overflowing_add(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+
+                    },
+                    ArithmeticTarget::B => {
+                        let (value, did_overflow) = self.registers.b_reg.overflowing_add(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+
+
+                    },
+                    ArithmeticTarget::C => {
+                        let (value, did_overflow) = self.registers.c_reg.overflowing_add(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+
+
+                    },
+                    ArithmeticTarget::D => {
+                        let (value, did_overflow) = self.registers.d_reg.overflowing_add(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+
+
+                    },
+                    ArithmeticTarget::E => {
+                        let (value, did_overflow) = self.registers.e_reg.overflowing_add(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+
+
+                    },
+                    ArithmeticTarget::H => {
+                        let (value, did_overflow) = self.registers.h_reg.overflowing_add(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+
+
+                    },
+                    ArithmeticTarget::L => {
+                        let (value, did_overflow) = self.registers.l_reg.overflowing_add(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+
+
+                    }
+
+                    _ => {self.pc}
+                }
+            }
+
+            Instruction::INC_HL => {
+                let (value, did_overflow) = self.registers.get_hl().overflowing_add(1);
+                self.registers.set_hl(value);
+                self.registers.set_z(self.registers.a_reg == 0);
+                self.registers.set_n(false);
+                self.registers.set_h(did_overflow);
+                self.pc.wrapping_add(1)
+            }
+
+            Instruction::INC_R16(target) => {
+                match target {
+                    BigRegisterTarget::AF => {
+                        let og_value = self.registers.get_af();
+                        let new_value = og_value.wrapping_add(1);
+                        self.registers.set_af(new_value);
+                        self.pc.wrapping_add(1)
+                    },
+                    BigRegisterTarget::BC => {
+                        let og_value = self.registers.get_bc();
+                        let new_value = og_value.wrapping_add(1);
+                        self.registers.set_bc(new_value);
+                        self.pc.wrapping_add(1)
+                    },BigRegisterTarget::DE => {
+                        let og_value = self.registers.get_de();
+                        let new_value = og_value.wrapping_add(1);
+                        self.registers.set_de(new_value);
+                        self.pc.wrapping_add(1)
+                    },BigRegisterTarget::HL => {
+                        let og_value = self.registers.get_hl();
+                        let new_value = og_value.wrapping_add(1);
+                        self.registers.set_hl(new_value);
+                        self.pc.wrapping_add(1)
+                    },
+                    _ => {self.pc}
+                }
+            }
+
+            Instruction::INC_SP => {
+                self.sp.wrapping_add(1);
+                self.pc.wrapping_add(1)
+            }
+
+            Instruction::DEC(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        let (value, did_overflow) = self.registers.a_reg.overflowing_sub(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(true);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::B => {
+                        let (value, did_overflow) = self.registers.b_reg.overflowing_sub(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(true);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::C => {
+                        let (value, did_overflow) = self.registers.c_reg.overflowing_sub(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(true);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::D => {
+                        let (value, did_overflow) = self.registers.d_reg.overflowing_sub(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(true);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::E => {
+                        let (value, did_overflow) = self.registers.e_reg.overflowing_sub(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(true);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::H => {
+                        let (value, did_overflow) = self.registers.h_reg.overflowing_sub(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(true);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::L => {
+                        let (value, did_overflow) = self.registers.l_reg.overflowing_sub(1);
+                        self.registers.set_z(self.registers.a_reg == 0);
+                        self.registers.set_n(true);
+                        self.registers.set_h(did_overflow);
+                        self.pc.wrapping_add(1)
+                    }
+
+                }
+            }
+
+            Instruction::DEC_HL => {
+                let (value, did_overflow) = self.registers.get_hl().overflowing_sub(1);
+                self.registers.set_hl(value);
+                self.registers.set_z(self.registers.a_reg == 0);
+                self.registers.set_n(true);
+                self.registers.set_h(did_overflow);
+                self.pc.wrapping_add(1)
+            }
+
+            Instruction::DEC_R16(target) => {
+                match target {
+                    BigRegisterTarget::AF => {
+                        let og_value = self.registers.get_af();
+                        let new_value = og_value.wrapping_sub(1);
+                        self.registers.set_af(new_value);
+                        self.pc.wrapping_add(1)
+                    },
+                    BigRegisterTarget::BC => {
+                        let og_value = self.registers.get_bc();
+                        let new_value = og_value.wrapping_sub(1);
+                        self.registers.set_bc(new_value);
+                        self.pc.wrapping_add(1)
+                    },
+                    BigRegisterTarget::DE => {
+                        let og_value = self.registers.get_de();
+                        let new_value = og_value.wrapping_sub(1);
+                        self.registers.set_de(new_value);
+                        self.pc.wrapping_add(1)
+                    },
+                    BigRegisterTarget::HL => {
+                        let og_value = self.registers.get_hl();
+                        let new_value = og_value.wrapping_sub(1);
+                        self.registers.set_hl(new_value);
+                        self.pc.wrapping_add(1)
+                    },
+
+                }
+            }
+
+            Instruction::DEC_SP => {
+                self.sp.wrapping_sub(1);
+                self.pc.wrapping_add(1)
+            }
+
             Instruction::SUB(target) => {
                 match target {
                     ArithmeticTarget::A => {
@@ -166,12 +376,151 @@ impl Cpu {
                         self.registers.a_reg = new_value;
                         self.pc.wrapping_add(1)
                     }
-                  
-                    
                 }
             }
 
-            Instruction::JP(test) => {
+            Instruction::AND(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        let value = self.registers.a_reg;
+                        let result = self.bit_and(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::B => {
+                        let value = self.registers.b_reg;
+                        let result = self.bit_and(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::C => {
+                        let value = self.registers.c_reg;
+                        let result = self.bit_and(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::D => {
+                        let value = self.registers.d_reg;
+                        let result = self.bit_and(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::E => {
+                        let value = self.registers.e_reg;
+                        let result = self.bit_and(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::H => {
+                        let value = self.registers.h_reg;
+                        let result = self.bit_and(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::L => {
+                        let value = self.registers.l_reg;
+                        let result = self.bit_and(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    }
+                }
+            }
+
+            Instruction::OR(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        let value = self.registers.a_reg;
+                        let result = self.bit_or(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::B => {
+                        let value = self.registers.b_reg;
+                        let result = self.bit_or(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::C => {
+                        let value = self.registers.c_reg;
+                        let result = self.bit_or(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::D => {
+                        let value = self.registers.d_reg;
+                        let result = self.bit_or(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::E => {
+                        let value = self.registers.e_reg;
+                        let result = self.bit_or(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::H => {
+                        let value = self.registers.h_reg;
+                        let result = self.bit_or(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::L => {
+                        let value = self.registers.l_reg;
+                        let result = self.bit_or(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    }
+                }
+            }
+
+            Instruction::XOR(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        let value = self.registers.a_reg;
+                        let result = self.bit_xor(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::B => {
+                        let value = self.registers.b_reg;
+                        let result = self.bit_xor(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::C => {
+                        let value = self.registers.c_reg;
+                        let result = self.bit_xor(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::D => {
+                        let value = self.registers.d_reg;
+                        let result = self.bit_xor(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::E => {
+                        let value = self.registers.e_reg;
+                        let result = self.bit_xor(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::H => {
+                        let value = self.registers.h_reg;
+                        let result = self.bit_xor(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::L => {
+                        let value = self.registers.l_reg;
+                        let result = self.bit_xor(value);
+                        self.registers.a_reg = result;
+                        self.pc.wrapping_add(1)
+                    }
+                }
+            }
+
+            Instruction::JPCC(test) => {
                 let jump_condition = match test {
                     JumpTest::NotZero => !self.registers.get_z(),
                     JumpTest::NotCarry => !self.registers.get_c(),
@@ -182,26 +531,154 @@ impl Cpu {
                 self.jump(jump_condition)
             }
 
+            Instruction::JP => {
+                self.jump(true)
+            }
+
+            Instruction::JP_HL => {
+                let least_significant_byte = self.bus.read_byte(self.registers.get_hl() + 1) as u16;
+                let most_significant_byte = self.bus.read_byte(self.registers.get_hl() + 2) as u16;
+                self.pc = (most_significant_byte << 8) | least_significant_byte;
+                self.pc
+            }
+
             Instruction::LD(LoadType) => {
                match LoadType {
-                   LoadType::Byte(target, source) => {
+                   LoadType::R8ToR8(target, source) => {
                     let source_value = match source {
                         LoadByteSource::A => self.registers.a_reg,
+                        LoadByteSource::B => self.registers.b_reg,
+                        LoadByteSource::C => self.registers.c_reg,
+                        LoadByteSource::D => self.registers.d_reg,
+                        LoadByteSource::E => self.registers.e_reg,
+                        LoadByteSource::H => self.registers.h_reg,
+                        LoadByteSource::L => self.registers.l_reg,
                         LoadByteSource::D8 => self.read_next_byte(),
-                        LoadByteSource::HLI => self.bus.read_byte(self.registers.get_hl()),
-                        _ => {panic!("IMPLEMENT OTHER SOURCES FN")}
+                        LoadByteSource::HLI => self.bus.read_byte(self.registers.get_hl())
+
                     };
 
                     match target {
                         LoadByteTarget::A => self.registers.a_reg = source_value,
-                        LoadByteTarget::HLI => self.bus.write_byte(self.registers.get_hl(), source_value),
-                        _ => {  panic!("FINSIH THE REST OF TATGETS FN") }
+                        LoadByteTarget::B => self.registers.b_reg = source_value,
+                        LoadByteTarget::C => self.registers.c_reg = source_value,
+                        LoadByteTarget::D => self.registers.d_reg = source_value,
+                        LoadByteTarget::E => self.registers.e_reg = source_value,
+                        LoadByteTarget::H => self.registers.h_reg = source_value,
+                        LoadByteTarget::L => self.registers.l_reg = source_value,
+                        LoadByteTarget::HLI => self.bus.write_byte(self.registers.get_hl(), source_value)
+
                     };
 
                     match source {
                         LoadByteSource::D8 => self.pc.wrapping_add(2),
                         _                  => self.pc.wrapping_add(1),
                     }
+
+                    
+                   }
+
+                   LoadType::HLtoR8(target) => {
+                    match target {
+                        LoadByteTarget::A => {
+                            self.registers.a_reg = self.registers.get_hl() as u8;
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteTarget::B => {
+                            self.registers.b_reg = self.registers.get_hl() as u8;
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteTarget::C => {
+                            self.registers.c_reg = self.registers.get_hl() as u8;
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteTarget::D => {
+                            self.registers.d_reg = self.registers.get_hl() as u8;
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteTarget::E => {
+                            self.registers.e_reg = self.registers.get_hl() as u8;
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteTarget::H => {
+                            self.registers.h_reg = self.registers.get_hl() as u8;
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteTarget::L => {
+                            self.registers.l_reg = self.registers.get_hl() as u8;
+                            self.pc.wrapping_add(1)
+                        },
+                         _ => {self.pc}
+                    }
+                   }
+
+                   LoadType::R8ToHL(target) => {
+                    match target {
+                        LoadByteSource::A => {
+                            self.registers.set_hl(self.registers.a_reg as u16);
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteSource::B => {
+                            self.registers.set_hl(self.registers.b_reg as u16);
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteSource::C => {
+                            self.registers.set_hl(self.registers.c_reg as u16);
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteSource::D => {
+                            self.registers.set_hl(self.registers.d_reg as u16);
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteSource::E => {
+                            self.registers.set_hl(self.registers.e_reg as u16);
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteSource::H => {
+                            self.registers.set_hl(self.registers.h_reg as u16);
+                            self.pc.wrapping_add(1)
+                        },
+                        LoadByteSource::L => {
+                            self.registers.set_hl(self.registers.l_reg as u16);
+                            self.pc.wrapping_add(1)
+                        },
+
+                        _ => {self.pc}
+
+                    }
+                   }
+
+                   LoadType::N8toR8(target) => {
+                    let N8 = self.read_next_byte();
+                    match target {
+                        ArithmeticTarget::A => {self.registers.a_reg = N8;},
+                        ArithmeticTarget::B => {self.registers.b_reg = N8;},
+                        ArithmeticTarget::C => {self.registers.c_reg = N8;},
+                        ArithmeticTarget::D => {self.registers.d_reg = N8;},
+                        ArithmeticTarget::E => {self.registers.e_reg = N8;},
+                        ArithmeticTarget::H => {self.registers.h_reg = N8;},
+                        ArithmeticTarget::L => {self.registers.l_reg = N8;},
+                    }
+                    self.pc.wrapping_add(2)
+                   }
+
+                   LoadType::N16ADtoA => {
+                    let N8 = self.read_next_byte();
+                    self.registers.a_reg = self.bus.read_byte(N8 as usize);
+                    self.pc.wrapping_add(2)
+                   }
+
+                   LoadType::N16toR16(target) => {
+                    let N16 = self.read_next_byte() as u16;
+
+                    match target {
+                        BigRegisterTarget::AF => {self.registers.set_af(N16);},
+                        BigRegisterTarget::BC => {self.registers.set_af(N16);},
+                        BigRegisterTarget::DE => {self.registers.set_de(N16);},
+                        BigRegisterTarget::HL => {self.registers.set_hl(N16);}
+
+                    }
+                    self.pc.wrapping_add(2)
                    }
 
                    _ => {   panic!("ADD THE REST OF LOAD TYPES")    }
@@ -244,6 +721,116 @@ impl Cpu {
                 self.return_(jump_condition)
             }
 
+            Instruction::SWAP(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        let lower_nibble = self.registers.a_reg & 0x0F;
+                        let upper_nibble = self.registers.a_reg & 0xF0;
+                        let shifted_lower = lower_nibble << 4;
+                        let shifted_upper = upper_nibble >> 4;
+                        let result = shifted_lower | shifted_upper;
+                        self.registers.a_reg = result;
+                        
+                        self.registers.set_z(result == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(false);
+                        self.registers.set_c(false);
+
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::B => {
+                        let lower_nibble = self.registers.b_reg & 0x0F;
+                        let upper_nibble = self.registers.b_reg & 0xF0;
+                        let shifted_lower = lower_nibble << 4;
+                        let shifted_upper = upper_nibble >> 4;
+                        let result = shifted_lower | shifted_upper;
+                        self.registers.b_reg = result;
+                        
+                        self.registers.set_z(result == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(false);
+                        self.registers.set_c(false);
+
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::C => {
+                        let lower_nibble = self.registers.c_reg & 0x0F;
+                        let upper_nibble = self.registers.c_reg & 0xF0;
+                        let shifted_lower = lower_nibble << 4;
+                        let shifted_upper = upper_nibble >> 4;
+                        let result = shifted_lower | shifted_upper;
+                        self.registers.c_reg = result;
+                        
+                        self.registers.set_z(result == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(false);
+                        self.registers.set_c(false);
+
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::D => {
+                        let lower_nibble = self.registers.d_reg & 0x0F;
+                        let upper_nibble = self.registers.d_reg & 0xF0;
+                        let shifted_lower = lower_nibble << 4;
+                        let shifted_upper = upper_nibble >> 4;
+                        let result = shifted_lower | shifted_upper;
+                        self.registers.d_reg = result;
+                        
+                        self.registers.set_z(result == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(false);
+                        self.registers.set_c(false);
+
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::E => {
+                        let lower_nibble = self.registers.e_reg & 0x0F;
+                        let upper_nibble = self.registers.ereg & 0xF0;
+                        let shifted_lower = lower_nibble << 4;
+                        let shifted_upper = upper_nibble >> 4;
+                        let result = shifted_lower | shifted_upper;
+                        self.registers.e_reg = result;
+                        
+                        self.registers.set_z(result == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(false);
+                        self.registers.set_c(false);
+
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::H => {
+                        let lower_nibble = self.registers.h_reg & 0x0F;
+                        let upper_nibble = self.registers.h_reg & 0xF0;
+                        let shifted_lower = lower_nibble << 4;
+                        let shifted_upper = upper_nibble >> 4;
+                        let result = shifted_lower | shifted_upper;
+                        self.registers.h_reg = result;
+                        
+                        self.registers.set_z(result == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(false);
+                        self.registers.set_c(false);
+
+                        self.pc.wrapping_add(1)
+                    },
+                    ArithmeticTarget::L => {
+                        let lower_nibble = self.registers.l_reg & 0x0F;
+                        let upper_nibble = self.registers.l_reg & 0xF0;
+                        let shifted_lower = lower_nibble << 4;
+                        let shifted_upper = upper_nibble >> 4;
+                        let result = shifted_lower | shifted_upper;
+                        self.registers.l_reg = result;
+                        
+                        self.registers.set_z(result == 0);
+                        self.registers.set_n(false);
+                        self.registers.set_h(false);
+                        self.registers.set_c(false);
+
+                        self.pc.wrapping_add(1)
+                    }
+                }
+            }
+
             Instruction::NOP => {
                 self.pc.wrapping_add(1)
             }
@@ -271,6 +858,14 @@ impl Cpu {
         new_value
     }
 
+    // fn adc(&mut self, value: u8) -> u8 {
+    //     let (new_value, did_overflow) = self.registers.a_reg.overflowing_add(value.overflowing_add(self.registers.get_c())[0]);
+
+
+    //     self.registers.set_z(new_value)
+    // }
+
+
     fn sub(&mut self, value: u8) -> u8{
 
         let (new_value, did_overflow) = self.registers.a_reg.overflowing_sub(value);
@@ -283,6 +878,39 @@ impl Cpu {
         self.registers.set_c(did_overflow);
         self.registers.set_h((self.registers.a_reg & 0xF) + (value & 0xF) > 0xF);
         new_value
+    }
+
+    fn bit_and(&mut self, value: u8) -> u8{
+        let new_value = self.registers.a_reg & value;
+        
+        self.registers.set_z(new_value == 0);
+        self.registers.set_n(false);
+        self.registers.set_h(true);
+        self.registers.set_c(false);
+
+        return new_value;
+    }
+
+    fn bit_or(&mut self, value: u8) -> u8{
+        let new_value = self.registers.a_reg | value;
+        
+        self.registers.set_z(new_value == 0);
+        self.registers.set_n(false);
+        self.registers.set_h(true);
+        self.registers.set_c(false);
+
+        return new_value;
+    }
+
+    fn bit_xor(&mut self, value: u8) -> u8{
+        let new_value = self.registers.a_reg ^ value;
+        
+        self.registers.set_z(new_value == 0);
+        self.registers.set_n(false);
+        self.registers.set_h(true);
+        self.registers.set_c(false);
+
+        return new_value;
     }
 
     fn jump(&self, should_jump: bool) -> u16 {
@@ -360,13 +988,27 @@ enum Instruction {
     ADD(ArithmeticTarget),
     ADC(ArithmeticTarget),
     SUB(ArithmeticTarget),
-    JP(JumpTest),
+    AND(ArithmeticTarget),
+    OR(ArithmeticTarget),
+    XOR(ArithmeticTarget),
+    INC(ArithmeticTarget),
+    DEC(ArithmeticTarget),
+    INC_HL,
+    DEC_HL,
+    INC_R16(BigRegisterTarget),
+    DEC_R16(BigRegisterTarget),
+    INC_SP,
+    DEC_SP,
+    JPCC(JumpTest),
+    JP,
+    JP_HL,
     LD(LoadType),
     PUSH(StackTargets),
     POP(StackTargets),
     CALL(JumpTest),
     RET(JumpTest),
     NOP,
+    SWAP(ArithmeticTarget),
     HALT
 }
 
@@ -396,6 +1038,11 @@ impl Instruction{
 enum ArithmeticTarget {
     A, B, C, D, E, H, L,
 }
+
+enum BigRegisterTarget {
+    AF, BC, DE, HL
+}
+
 enum JumpTest {
     NotZero,
     Zero,
@@ -426,127 +1073,24 @@ enum LoadByteSource {
 }
 
 enum LoadType {
-    Byte(LoadByteTarget, LoadByteSource),
+    R8ToR8(LoadByteTarget, LoadByteSource),
+    R8ToHL(LoadByteSource),
+    HLtoR8(LoadByteTarget),
+    N8toR8(ArithmeticTarget),
+    N16toR16(BigRegisterTarget),
+    R8toHL,
+    AtoR16,
+    N16ADtoA,
+
+
+
+
 }
 
 enum StackTargets{
     AF, BC, DE, HL
 }
 
-pub struct Registers{
-    a_reg: u8,
-    b_reg: u8,
-    c_reg: u8,
-    d_reg: u8,
-    e_reg: u8,
-    f_reg: Flags,
-    h_reg: u8,
-    l_reg: u8
-}
-
-impl Registers {
-    fn new() -> Self{
-        Registers { 
-            a_reg: 0,
-            f_reg: Flags::empty(),
-            b_reg: 0,
-            c_reg: 0,
-            d_reg: 0,
-            e_reg: 0,
-            h_reg: 0,
-            l_reg: 0
-         }
-    }
-
-    fn get_af(&self) -> u16 {
-        return (self.a_reg as u16) << 8 | self.f_reg.bits() as u16;
-    }
-
-    fn set_af(&mut self, value: u16) {
-        self.a_reg = ((value & 0xFF00) >> 8) as u8;
-        self.f_reg = Flags::from_bits_truncate(value as u8);
-    }
-
-    fn get_bc(&self) -> u16 {
-        return (self.b_reg as u16) << 8 | self.c_reg as u16;
-    }
-
-    fn set_bc(&mut self, value: u16) {
-        self.b_reg = ((value & 0xFF00) >> 8) as u8;
-        self.c_reg = (value & 0xFF) as u8;
-    }
-
-    fn get_de(&self) -> u16 {
-        return (self.d_reg as u16) << 8 | self.e_reg as u16;
-    }
-
-    fn set_de(&mut self, value: u16) {
-        self.d_reg = ((value & 0xFF00) >> 8) as u8;
-        self.e_reg = (value & 0xFF) as u8;
-    }
-
-    fn get_hl(&self) -> u16 {
-        return (self.h_reg as u16) << 8 | self.l_reg as u16;
-    }
-
-    fn set_hl(&mut self, value: u16) {
-        self.h_reg = ((value & 0xFF00) >> 8) as u8;
-        self.l_reg = (value & 0xFF) as u8;
-    }
-
-    // Getting flags
-    fn get_z(&self) -> bool{
-        self.f_reg.contains(Flags::z_flag)
-    }
-
-    fn get_n(&self) -> bool{
-        self.f_reg.contains(Flags::n_flag)
-    }
-
-    fn get_h(&self) -> bool{
-        self.f_reg.contains(Flags::h_flag)
-    }
-
-    fn get_c(&self) -> bool{
-        self.f_reg.contains(Flags::c_flag)
-    }
-
-    // Setting flags
-    fn set_z(&mut self, zf: bool){
-        self.f_reg.set(Flags::z_flag, zf);
-    }
-
-    fn set_n(&mut self, nf: bool){
-        self.f_reg.set(Flags::n_flag, nf);
-    }
-
-    fn set_h(&mut self, hf: bool){
-        self.f_reg.set(Flags::h_flag, hf);
-    }
-
-    fn set_c(&mut self, cf: bool){
-        self.f_reg.set(Flags::c_flag, cf);
-    }
-}
-
-// struct Flags {
-//      z_flag: bool, //ZERO FLAG; set to 1 if current op results in 0 or two values match a CMP operation
-//      n_flag: bool, //SUBSTRACTION FLAG; set to 1 if substraction happens
-//      h_flag: bool, //HALF CARRY FLAG; set to 1 if a carry occured from the lower nibble in the last operation
-//      c_flag: bool, //CARRY FLAG; set to 1 if a carry occured in the last operation or if A is the smaller value on CP instruction
-// }
-
-bitflags! (
-    pub struct Flags: u8{
-        const z_flag = 0b_1000_0000;
-        const n_flag = 0b_0100_0000;
-        const h_flag = 0b_0010_0000;
-        const c_flag = 0b_0001_0000;
-
-    }
-
-
-);
 
  
 

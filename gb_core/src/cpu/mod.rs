@@ -1,0 +1,171 @@
+use crate::{bus::MemoryBus, cpu::{instructions::Instruction, registers::Registers}};
+use crate::cpu::execute::execute
+
+pub mod registers;
+pub mod instructions;
+pub mod execute;
+
+pub struct Cpu {
+    pub registers: Registers,
+    pub pc: u16,
+    pub sp: u16,
+    pub bus: MemoryBus,
+    pub is_halted: bool
+
+}
+
+impl Cpu {
+    pub fn new() -> Cpu{
+        let registers:Registers =  Registers::new(); 
+
+         let mem:MemoryBus = MemoryBus { memory: [0; 0xFFFF] };
+
+         Cpu {
+            registers: registers,
+            pc: 0x0000,
+            sp: 0,
+            bus: mem,
+            is_halted: false
+         }
+    }
+
+
+    fn add(&mut self, value: u8) -> u8{
+
+        let (new_value, did_overflow) = self.registers.a_reg.overflowing_add(value);
+        // self.registers.f_reg.z_flag = new_value == 0;
+        // self.registers.f_reg.n_flag = false;
+        // self.registers.f_reg.c_flag = did_overflow;
+        // self.registers.f_reg.h_flag = (self.registers.a_reg & 0xF) + (value & 0xF) > 0xF;
+        self.registers.set_z(new_value == 0);
+        self.registers.set_n(false);
+        self.registers.set_carry(did_overflow);
+        self.registers.set_hc((self.registers.a_reg & 0xF) + (value & 0xF) > 0xF);
+        new_value
+    }
+
+    // fn adc(&mut self, value: u8) -> u8 {
+    //     let (new_value, did_overflow) = self.registers.a_reg.overflowing_add(value.overflowing_add(self.registers.get_c())[0]);
+
+
+    //     self.registers.set_z(new_value)
+    // }
+
+
+    fn sub(&mut self, value: u8) -> u8{
+
+        let (new_value, did_overflow) = self.registers.a_reg.overflowing_sub(value);
+        // self.registers.f_reg.z_flag = new_value == 0;
+        // self.registers.f_reg.n_flag = false;
+        // self.registers.f_reg.c_flag = did_overflow;
+        // self.registers.f_reg.h_flag = (self.registers.a_reg & 0xF) + (value & 0xF) > 0xF;
+        self.registers.set_z(new_value == 0);
+        self.registers.set_n(true);
+        self.registers.set_carry(did_overflow);
+        self.registers.set_hc((self.registers.a_reg & 0xF) + (value & 0xF) > 0xF);
+        new_value
+    }
+
+    fn bit_and(&mut self, value: u8) -> u8{
+        let new_value = self.registers.a_reg & value;
+        
+        self.registers.set_z(new_value == 0);
+        self.registers.set_n(false);
+        self.registers.set_hc(true);
+        self.registers.set_carry(false);
+
+        return new_value;
+    }
+
+    fn bit_or(&mut self, value: u8) -> u8{
+        let new_value = self.registers.a_reg | value;
+        
+        self.registers.set_z(new_value == 0);
+        self.registers.set_n(false);
+        self.registers.set_hc(true);
+        self.registers.set_carry(false);
+
+        return new_value;
+    }
+
+    fn bit_xor(&mut self, value: u8) -> u8{
+        let new_value = self.registers.a_reg ^ value;
+        
+        self.registers.set_z(new_value == 0);
+        self.registers.set_n(false);
+        self.registers.set_hc(true);
+        self.registers.set_carry(false);
+
+        return new_value;
+    }
+
+    fn jump(&self, should_jump: bool) -> u16 {
+        if should_jump{
+            let least_significant_byte = self.bus.read_byte(self.pc + 1) as u16;
+            let most_significant_byte = self.bus.read_byte(self.pc + 2) as u16;
+            (most_significant_byte << 8) | least_significant_byte
+        }else{
+            self.pc.wrapping_add(3)
+        }
+    }
+
+    pub fn step(&mut self) {
+
+        let mut instruction_byte = self.bus.read_byte(self.pc);
+        println!("{:#0x}", instruction_byte);
+        let prefixed = instruction_byte == 0xCB;
+        if prefixed {
+            instruction_byte = self.bus.read_byte(self.pc + 1);
+        }
+        
+        let next_pc: u16= if let Some(instruction) = Instruction::from_byte(instruction_byte, prefixed) {
+            execute(&mut self, instruction)
+        }else{
+            panic!("Unknown instruction found for 0x{:x}", instruction_byte);
+        };
+
+        self.pc = next_pc;
+    }
+
+    fn read_next_byte(&self) -> u8{
+        self.bus.memory[(self.pc + 1) as usize]
+    }
+
+    fn push(&mut self, value: u16) {
+        self.pc = self.sp.wrapping_sub(1);
+        self.bus.write_byte(self.sp, ((value & 0xFF00) >> 8) as u8);
+
+        self.sp = self.sp.wrapping_sub(1);
+        self.bus.write_byte(self.sp, (value & 0xFF00) as u8);
+    }
+
+    fn pop(&mut self) -> u16{
+        let lsb = self.bus.read_byte(self.sp) as u16;
+        self.sp = self.sp.wrapping_add(1);
+
+        let msb = self.bus.read_byte(self.sp) as u16;
+        self.sp = self.sp.wrapping_add(1);
+
+        (msb << 8) | lsb
+        
+    }
+
+    fn call(&mut self, should_jump: bool) -> u16 {
+        let next_pc = self.pc.wrapping_add(3);
+        if should_jump {
+            self.push(next_pc);
+            return next_pc;
+        }else{
+            return next_pc;
+        }
+    }
+
+    fn return_(&mut self, should_jump: bool) -> u16 {
+        if should_jump{
+            return self.pop();
+        }else{
+            return self.pc.wrapping_add(1);
+        }
+    }
+
+}

@@ -3,7 +3,8 @@ use std::fs::File;
 use std::io::Read;
 use std::env;
 
-mod gb;
+pub mod bus;
+pub mod cpu;
 
 
 pub struct Emulator { 
