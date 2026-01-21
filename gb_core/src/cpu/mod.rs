@@ -84,6 +84,78 @@ impl Cpu {
             self.step();
         }
     }
+
+    pub fn add(&mut self, value: u8) -> u8{
+
+        let (new_value, did_overflow) = self.regs.a_reg.overflowing_add(value);
+        // self.registers.f_reg.z_flag = new_value == 0;
+        // self.registers.f_reg.n_flag = false;
+        // self.registers.f_reg.c_flag = did_overflow;
+        // self.registers.f_reg.h_flag = (self.registers.a_reg & 0xF) + (value & 0xF) > 0xF;
+        self.regs.set_z(new_value == 0);
+        self.regs.set_n(false);
+        self.regs.set_carry(did_overflow);
+        self.regs.set_hc((self.regs.a_reg & 0xF) + (value & 0xF) > 0xF);
+        new_value
+    }
+
+    pub fn sub(&mut self, value: u8) -> u8{
+
+        let (new_value, did_overflow) = self.regs.a_reg.overflowing_sub(value);
+        // self.registers.f_reg.z_flag = new_value == 0;
+        // self.registers.f_reg.n_flag = false;
+        // self.registers.f_reg.c_flag = did_overflow;
+        // self.registers.f_reg.h_flag = (self.registers.a_reg & 0xF) + (value & 0xF) > 0xF;
+        self.regs.set_z(new_value == 0);
+        self.regs.set_n(true);
+        self.regs.set_carry(did_overflow);
+        self.regs.set_hc((self.regs.a_reg & 0xF) + (value & 0xF) > 0xF);
+        new_value
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::Cpu;
+
+    #[test]
+    fn push_pop_word_roundtrip_and_endianness() {
+        let mut cpu = Cpu::new();
+        cpu.sp = 0xFFFE;
+        cpu.pc = 0x1234;
+
+        cpu.push_word(0xBEEF);
+
+        // PC must not change due to stack operations
+        assert_eq!(cpu.pc, 0x1234);
+
+        // Stack grows down by 2
+        assert_eq!(cpu.sp, 0xFFFC);
+
+        // In our implementation: [SP]=lo, [SP+1]=hi after push_word?
+        // NOTE: this depends on how you implemented push_word.
+        // If you used the common pattern (decrement, write hi, decrement, write lo),
+        // then at final SP: mem[SP]=lo, mem[SP+1]=hi.
+        assert_eq!(cpu.bus.read_byte(cpu.sp), 0xEF); // lo
+        assert_eq!(cpu.bus.read_byte(cpu.sp + 1), 0xBE); // hi
+
+        let v = cpu.pop_word();
+        assert_eq!(v, 0xBEEF);
+        assert_eq!(cpu.sp, 0xFFFE);
+    }
+
+    #[test]
+    fn pop_word_reads_in_correct_order() {
+        let mut cpu = Cpu::new();
+        cpu.sp = 0xFFFC;
+        cpu.bus.write_byte(0xFFFC, 0x34); // lo
+        cpu.bus.write_byte(0xFFFD, 0x12); // hi
+
+        let v = cpu.pop_word();
+        assert_eq!(v, 0x1234);
+        assert_eq!(cpu.sp, 0xFFFE);
+    }
 }
 
 

@@ -1,26 +1,37 @@
 
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum ArithmeticTarget { A, B, C, D, E, H, L }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum BigRegisterTarget { AF, BC, DE, HL }
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum JumpTest { NotZero, Zero, NotCarry, Carry, Always }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum LoadByteTarget { A, B, C, D, E, H, L, HLI }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum LoadByteSource { A, B, C, D, E, H, L, D8, HLI }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum LoadType {
-    Byte(LoadByteTarget, LoadByteSource),
+    R8ToR8(LoadByteTarget, LoadByteSource),
+    R8ToHL(LoadByteSource),
+    HLtoR8(LoadByteTarget),
+    N8toR8(ArithmeticTarget),
+    N16toR16(BigRegisterTarget),
+    R8toHL,
+    AtoR16,
+    N16ADtoA,
+
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum StackTargets { AF, BC, DE, HL }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Instruction {
     ADD(ArithmeticTarget),
     SUB(ArithmeticTarget),

@@ -1,6 +1,14 @@
 use super::{Cpu};
 use super::instructions::*;
 
+
+// Add function
+
+
+
+
+
+
 pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
     if cpu.halted {
         return cpu.pc;
@@ -18,10 +26,10 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
 
         Instruction::JP(test) => {
             let cond = match test {
-                JumpTest::NotZero => !cpu.regs.z(),
-                JumpTest::Zero => cpu.regs.z(),
-                JumpTest::NotCarry => !cpu.regs.c(),
-                JumpTest::Carry => cpu.regs.c(),
+                JumpTest::NotZero => !cpu.regs.get_z(),
+                JumpTest::Zero => cpu.regs.get_z(),
+                JumpTest::NotCarry => !cpu.regs.get_carry(),
+                JumpTest::Carry => cpu.regs.get_carry(),
                 JumpTest::Always => true,
             };
             if cond { cpu.next_word() } else { cpu.pc.wrapping_add(3) }
@@ -30,10 +38,10 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
         Instruction::CALL(test) => {
             let cond = match test {
                 JumpTest::Always => true,
-                JumpTest::NotZero => !cpu.regs.z(),
-                JumpTest::Zero => cpu.regs.z(),
-                JumpTest::NotCarry => !cpu.regs.c(),
-                JumpTest::Carry => cpu.regs.c(),
+                JumpTest::NotZero => !cpu.regs.get_z(),
+                JumpTest::Zero => cpu.regs.get_z(),
+                JumpTest::NotCarry => !cpu.regs.get_carry(),
+                JumpTest::Carry => cpu.regs.get_carry(),
             };
             let target = cpu.next_word();
             let ret_addr = cpu.pc.wrapping_add(3);
@@ -48,14 +56,156 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
         Instruction::RET(test) => {
             let cond = match test {
                 JumpTest::Always => true,
-                JumpTest::NotZero => !cpu.regs.z(),
-                JumpTest::Zero => cpu.regs.z(),
-                JumpTest::NotCarry => !cpu.regs.c(),
-                JumpTest::Carry => cpu.regs.c(),
+                JumpTest::NotZero => !cpu.regs.get_z(),
+                JumpTest::Zero => cpu.regs.get_z(),
+                JumpTest::NotCarry => !cpu.regs.get_carry(),
+                JumpTest::Carry => cpu.regs.get_carry(),
             };
             if cond { cpu.pop_word() } else { cpu.pc.wrapping_add(1) }
         }
 
+        Instruction::ADD(ArithmeticTarget) => {
+            
+            match ArithmeticTarget {
+                ArithmeticTarget::A => {
+                    let value = cpu.regs.a();
+                    let new_value = cpu.add(value);
+                    cpu.regs.set_a(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },
+                ArithmeticTarget::B => {
+                    let value = cpu.regs.b();
+                    let new_value = cpu.add(value);
+                    cpu.regs.set_b(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },
+                ArithmeticTarget::C => {
+                    let value = cpu.regs.c();
+                    let new_value = cpu.add(value);
+                    cpu.regs.set_c(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },ArithmeticTarget::D => {
+                    let value = cpu.regs.d();
+                    let new_value = cpu.add(value);
+                    cpu.regs.set_d(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },ArithmeticTarget::E => {
+                    let value = cpu.regs.e();
+                    let new_value = cpu.add(value);
+                    cpu.regs.set_e(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },ArithmeticTarget::H => {
+                    let value = cpu.regs.h();
+                    let new_value = cpu.add(value);
+                    cpu.regs.set_h(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },ArithmeticTarget::L => {
+                    let value = cpu.regs.l();
+                    let new_value = cpu.add(value);
+                    cpu.regs.set_l(new_value);
+                    cpu.pc.wrapping_add(1)
+                }
+                
+                _ => {/*more targets*/ cpu.pc}
+            }
+        }
+
+
+        Instruction::SUB(ArithmeticTarget) => {
+            
+            match ArithmeticTarget {
+                ArithmeticTarget::A => {
+                    let value = cpu.regs.a();
+                    let new_value = cpu.sub(value);
+                    cpu.regs.set_a(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },
+                ArithmeticTarget::B => {
+                    let value = cpu.regs.b();
+                    let new_value = cpu.sub(value);
+                    cpu.regs.set_b(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },
+                ArithmeticTarget::C => {
+                    let value = cpu.regs.c();
+                    let new_value = cpu.sub(value);
+                    cpu.regs.set_c(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },ArithmeticTarget::D => {
+                    let value = cpu.regs.d();
+                    let new_value = cpu.sub(value);
+                    cpu.regs.set_d(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },ArithmeticTarget::E => {
+                    let value = cpu.regs.e();
+                    let new_value = cpu.sub(value);
+                    cpu.regs.set_e(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },ArithmeticTarget::H => {
+                    let value = cpu.regs.h();
+                    let new_value = cpu.sub(value);
+                    cpu.regs.set_h(new_value);
+                    cpu.pc.wrapping_add(1)
+
+                },ArithmeticTarget::L => {
+                    let value = cpu.regs.l();
+                    let new_value = cpu.sub(value);
+                    cpu.regs.set_l(new_value);
+                    cpu.pc.wrapping_add(1)
+                }
+                
+                _ => {/*more targets*/ cpu.pc}
+            }
+        }
+
+        Instruction::LD(loadType) => {
+            match loadType{
+                LoadType::R8ToR8(target, source) => {
+                    let source_value = match source {
+                        LoadByteSource::A => cpu.regs.a(),
+                        LoadByteSource::B => cpu.regs.b(),
+                        LoadByteSource::C => cpu.regs.c(),
+                        LoadByteSource::D => cpu.regs.d(),
+                        LoadByteSource::E => cpu.regs.e(),
+                        LoadByteSource::H => cpu.regs.h(),
+                        LoadByteSource::L => cpu.regs.l(),
+                        LoadByteSource::D8 => cpu.next_byte(),
+                        LoadByteSource::HLI => cpu.bus.read_byte(cpu.regs.get_hl())
+
+                    };
+
+                    match target {
+                        LoadByteTarget::A => cpu.regs.set_a(source_value),
+                        LoadByteTarget::B => cpu.regs.set_b(source_value),
+                        LoadByteTarget::C => cpu.regs.set_c(source_value),
+                        LoadByteTarget::D => cpu.regs.set_d(source_value),
+                        LoadByteTarget::E => cpu.regs.set_e(source_value),
+                        LoadByteTarget::H => cpu.regs.set_h(source_value),
+                        LoadByteTarget::L => cpu.regs.set_l(source_value),
+                        LoadByteTarget::HLI => cpu.bus.write_byte(cpu.regs.get_hl(), source_value)
+
+                    };
+
+                    match source {
+                        LoadByteSource::D8 => cpu.pc.wrapping_add(2),
+                        _                  => cpu.pc.wrapping_add(1),
+                    }
+
+                    
+                   }
+            }
+        }
         // Keep migrating your existing ADD/SUB/LD/PUSH/POP here next.
         _ => {
             // temporary while you migrate
@@ -63,6 +213,95 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
         }
     }
 }
+
+
+#[cfg(test)]
+mod decode_tests {
+    use super::super::instructions::Instruction;
+
+    #[test]
+    fn decode_nop() {
+        let i = Instruction::decode(0x00, false).unwrap();
+        matches!(i, Instruction::NOP);
+    }
+
+    #[test]
+    fn decode_halt() {
+        let i = Instruction::decode(0x76, false).unwrap();
+        matches!(i, Instruction::HALT);
+    }
+}
+
+
+#[cfg(test)]
+mod step_tests {
+    use crate::cpu::Cpu;
+
+    #[test]
+    fn step_nop_advances_pc() {
+        let mut cpu = Cpu::new();
+        cpu.pc = 0x0100;
+        cpu.bus.write_byte(0x0100, 0x00); // NOP
+
+        cpu.step();
+
+        assert_eq!(cpu.pc, 0x0101);
+    }
+
+    #[test]
+    fn step_halt_stops_advancing() {
+        let mut cpu = Cpu::new();
+        cpu.pc = 0x0100;
+        cpu.bus.write_byte(0x0100, 0x76); // HALT
+
+        cpu.step();
+        assert!(cpu.halted);
+
+        let pc_after = cpu.pc;
+        cpu.step(); // should do nothing
+        assert_eq!(cpu.pc, pc_after);
+    }
+}
+
+
+#[cfg(test)]
+mod call_ret_tests {
+    use crate::cpu::Cpu;
+
+
+    #[test]
+    #[ignore]
+    fn call_then_ret_returns_to_next_instruction() {
+        let mut cpu = Cpu::new();
+        cpu.pc = 0x0100;
+        cpu.sp = 0xFFFE;
+
+        // Program:
+        // 0100: CD 00 02   CALL 0x0200
+        // 0103: 00         NOP   (should execute after RET)
+        // 0200: C9         RET
+        cpu.bus.write_byte(0x0100, 0xCD);
+        cpu.bus.write_byte(0x0101, 0x00);
+        cpu.bus.write_byte(0x0102, 0x02);
+        cpu.bus.write_byte(0x0103, 0x00);
+
+        cpu.bus.write_byte(0x0200, 0xC9);
+
+        // This assumes you’ve implemented decoding/execution for CALL (0xCD) and RET (0xC9).
+        cpu.step();
+        assert_eq!(cpu.pc, 0x0200, "CALL should jump to target");
+        assert_eq!(cpu.sp, 0xFFFC, "CALL should push return address");
+
+        cpu.step();
+        assert_eq!(cpu.pc, 0x0103, "RET should return to next instruction after CALL");
+        assert_eq!(cpu.sp, 0xFFFE, "RET should restore SP");
+
+        cpu.step();
+        assert_eq!(cpu.pc, 0x0104, "NOP after return should run");
+    }
+}
+
+
 
 
 
