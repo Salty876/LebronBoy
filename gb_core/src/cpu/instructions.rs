@@ -55,13 +55,28 @@ impl Instruction {
     }
 
     fn decode_cb(_byte: u8) -> Option<Self> {
-        None
+        match _byte {
+            // ADD r, d8 instructions here
+            // 0xC6 => Some(Self::ADD(ArithmeticTarget::D8)),
+            _ => None
+        }
     }
 
     fn decode_base(byte: u8) -> Option<Self> {
         match byte {
             0x00 => Some(Self::NOP),
             0x76 => Some(Self::HALT),
+
+            // ADD r, r instructions here
+            0x80 => Some(Self::ADD(ArithmeticTarget::B)),
+            0x81 => Some(Self::ADD(ArithmeticTarget::C)),
+            0x82 => Some(Self::ADD(ArithmeticTarget::D)),
+            0x83 => Some(Self::ADD(ArithmeticTarget::E)),
+            0x84 => Some(Self::ADD(ArithmeticTarget::H)),
+            0x85 => Some(Self::ADD(ArithmeticTarget::L)),
+            0x87 => Some(Self::ADD(ArithmeticTarget::A)),   
+            0x86 => Some(Self::ADD(ArithmeticTarget::A)),
+
             _ => None,
         }
     }

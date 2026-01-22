@@ -232,7 +232,7 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
                 }
 
                 LoadType::R16toSP(source) => {
-                    let valuee = match source {
+                    let value = match source {
                         BigRegisterTarget::AF => cpu.regs.get_af(),
                         BigRegisterTarget::BC => cpu.regs.get_bc(),
                         BigRegisterTarget::DE => cpu.regs.get_de(),
