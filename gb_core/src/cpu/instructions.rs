@@ -16,15 +16,19 @@ pub enum LoadByteTarget { A, B, C, D, E, H, L, HLI }
 pub enum LoadByteSource { A, B, C, D, E, H, L, D8, HLI }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum BigLoadByteTarget { AB, CD, DE, HL, SP }
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum BigLoadByteSource { AB, CD, DE, HL }
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum LoadType {
     R8ToR8(LoadByteTarget, LoadByteSource),
-    R8ToHL(LoadByteSource),
-    HLtoR8(LoadByteTarget),
-    N8toR8(ArithmeticTarget),
-    N16toR16(BigRegisterTarget),
-    R8toHL,
-    AtoR16,
-    N16ADtoA,
+    D16toR16(BigLoadByteTarget),
+    HLtoSP,
+    SPtoA16,
+    R16toSP(BigRegisterTarget),
+    SP8toHL,
 
 }
 

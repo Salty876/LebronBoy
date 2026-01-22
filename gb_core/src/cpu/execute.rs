@@ -204,14 +204,72 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
 
                     
                    }
-            }
+
+                LoadType::D16toR16(target) => {
+                    let value = cpu.next_word();
+                    match target {
+                        BigLoadByteTarget::AB => cpu.regs.set_af(value),
+                        BigLoadByteTarget::CD => cpu.regs.set_bc(value),
+                        BigLoadByteTarget::DE => cpu.regs.set_de(value),
+                        BigLoadByteTarget::HL => cpu.regs.set_hl(value),
+                        BigLoadByteTarget::SP => cpu.sp = value,
+                    };
+                    cpu.pc.wrapping_add(3)
+                }
+                
+                LoadType::HLtoSP => {
+                    cpu.sp = cpu.regs.get_hl();
+                    cpu.pc.wrapping_add(1)
+                },
+
+                LoadType::SPtoA16 => {
+                    let addr = cpu.next_word();
+                    let sp = cpu.sp;
+
+                    cpu.bus.write_byte(addr, (sp & 0xFF) as u8);
+                    cpu.bus.write_byte(addr.wrapping_add(1), (sp >> 8) as u8);
+                    cpu.pc.wrapping_add(3)
+                }
+
+                LoadType::R16toSP(source) => {
+                    let valuee = match source {
+                        BigRegisterTarget::AF => cpu.regs.get_af(),
+                        BigRegisterTarget::BC => cpu.regs.get_bc(),
+                        BigRegisterTarget::DE => cpu.regs.get_de(),
+                        BigRegisterTarget::HL => cpu.regs.get_hl(),
+                    };
+                    cpu.sp = value;
+                    cpu.pc.wrapping_add(1)
+                }
+
+                LoadType::SP8toHL => {
+                    let offset = cpu.next_byte() as i8 as i16;
+                    let sp = cpu.sp;
+                    let result  = sp.wrapping_add(offset as u16);
+                    cpu.regs.set_hl(result);
+
+
+                    let sp_low = sp & 0xFF;
+                    let offset_up: u16 = (offset as u16) & 0xFF;
+
+                    // set flags
+                    cpu.regs.set_z(false);
+                    cpu.regs.set_n(false);
+                    cpu.regs.set_carry((((sp_low & 0xFF) + ((offset_up as u16) & 0xFF)) > 0xFF));
+                    cpu.regs.set_hc(((sp_low & 0x0F) + ((offset_up as u16) & 0x0F)) > 0x0F);
+
+
+                    cpu.pc.wrapping_add(2)
+
+                },
+
+                _ => {cpu.pc}
         }
         // Keep migrating your existing ADD/SUB/LD/PUSH/POP here next.
-        _ => {
-            // temporary while you migrate
-            cpu.pc
-        }
+        
     }
+
+    _ => cpu.pc}
 }
 
 
