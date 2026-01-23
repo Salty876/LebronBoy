@@ -90,15 +90,6 @@ impl Registers {
         self.l_reg = value;
     }
 
-    pub fn get_sp(&self) -> u16 {
-        return (self.h_reg as u16) << 8 | self.l_reg as u16;
-    }
-
-    pub fn set_sp(&mut self, value: u16) {
-        self.h_reg = ((value & 0xFF00) >> 8) as u8;
-        self.l_reg = (value & 0xFF) as u8;
-    }
-
     pub fn get_pc(&self) -> u16 {
         return (self.b_reg as u16) << 8 | self.c_reg as u16;
     }

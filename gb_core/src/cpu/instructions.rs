@@ -36,8 +36,14 @@ pub enum LoadType {
 pub enum StackTargets { AF, BC, DE, HL }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum ArithmeticSource16 {AF, BC, DE, HL}
+
+
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Instruction {
     ADD(ArithmeticTarget),
+    ADD16(ArithmeticSource16),
     SUB(ArithmeticTarget),
     JP(JumpTest),
     LD(LoadType),
@@ -74,8 +80,8 @@ impl Instruction {
             0x83 => Some(Self::ADD(ArithmeticTarget::E)),
             0x84 => Some(Self::ADD(ArithmeticTarget::H)),
             0x85 => Some(Self::ADD(ArithmeticTarget::L)),
-            0x87 => Some(Self::ADD(ArithmeticTarget::A)),   
-            0x86 => Some(Self::ADD(ArithmeticTarget::A)),
+            // 0x86 => Some(Self::ADD(ArithmeticTarget::HLI)), // ADD A, (HL) - needs indirect addressing
+            0x87 => Some(Self::ADD(ArithmeticTarget::A)),
 
             _ => None,
         }

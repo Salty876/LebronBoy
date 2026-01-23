@@ -101,33 +101,34 @@ impl Cpu {
         new_value
     }
 
-    pub fn add_hl_rr(&mut self, register: u16){
+    pub fn add_hl_rr(&mut self, register: u16) -> u16{
         let hl = self.regs.get_hl();
 
         // u32 helps test cleanly
         let sum = (hl as u32) + (register as u32);
         let res = (sum & 0xFFFF) as u16;
 
-        self.regs.set_hl(res);
 
-        // Set flags
-        self.regs.set_z(false); //N = 0
+        // Set flags - ADD HL,rr only affects N, H, C (not Z)
+        // Z flag remains unchanged
+        self.regs.set_n(false);
         self.regs.set_hc(((hl & 0x0FFF) + (register & 0x0FFF)) > 0x0FFF);
         self.regs.set_carry(sum > 0xFFFF);
 
+        return res;
     }
 
     pub fn sub(&mut self, value: u8) -> u8{
 
         let (new_value, did_overflow) = self.regs.a_reg.overflowing_sub(value);
         // self.registers.f_reg.z_flag = new_value == 0;
-        // self.registers.f_reg.n_flag = false;
+        // self.registers.f_reg.n_flag = true;
         // self.registers.f_reg.c_flag = did_overflow;
-        // self.registers.f_reg.h_flag = (self.registers.a_reg & 0xF) + (value & 0xF) > 0xF;
+        // self.registers.f_reg.h_flag = (self.registers.a_reg & 0xF) < (value & 0xF);
         self.regs.set_z(new_value == 0);
         self.regs.set_n(true);
         self.regs.set_carry(did_overflow);
-        self.regs.set_hc((self.regs.a_reg & 0xF) + (value & 0xF) > 0xF);
+        self.regs.set_hc((self.regs.a_reg & 0xF) < (value & 0xF));
         new_value
     }
 }

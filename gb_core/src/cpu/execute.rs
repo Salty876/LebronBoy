@@ -65,108 +65,66 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
         }
 
         Instruction::ADD(ArithmeticTarget) => {
-            
-            match ArithmeticTarget {
-                ArithmeticTarget::A => {
-                    let value = cpu.regs.a();
-                    let new_value = cpu.add(value);
-                    cpu.regs.set_a(new_value);
-                    cpu.pc.wrapping_add(1)
+            let value = match ArithmeticTarget {
+                ArithmeticTarget::A => cpu.regs.a(),
+                ArithmeticTarget::B => cpu.regs.b(),
+                ArithmeticTarget::C => cpu.regs.c(),
+                ArithmeticTarget::D => cpu.regs.d(),
+                ArithmeticTarget::E => cpu.regs.e(),
+                ArithmeticTarget::H => cpu.regs.h(),
+                ArithmeticTarget::L => cpu.regs.l(),
+            };
+            let new_value = cpu.add(value);
+            cpu.regs.set_a(new_value);
+            cpu.pc.wrapping_add(1)
+        }
 
+        Instruction::ADD16(source) => {
+            match source {
+                ArithmeticSource16::AF => {
+                    let value = cpu.regs.get_af();
+                    let new_val = cpu.add_hl_rr(value);
+                    cpu.regs.set_hl(new_val);
+                    cpu.pc.wrapping_add(1)
                 },
-                ArithmeticTarget::B => {
-                    let value = cpu.regs.b();
-                    let new_value = cpu.add(value);
-                    cpu.regs.set_b(new_value);
-                    cpu.pc.wrapping_add(1)
-
-                },
-                ArithmeticTarget::C => {
-                    let value = cpu.regs.c();
-                    let new_value = cpu.add(value);
-                    cpu.regs.set_c(new_value);
-                    cpu.pc.wrapping_add(1)
-
-                },ArithmeticTarget::D => {
-                    let value = cpu.regs.d();
-                    let new_value = cpu.add(value);
-                    cpu.regs.set_d(new_value);
-                    cpu.pc.wrapping_add(1)
-
-                },ArithmeticTarget::E => {
-                    let value = cpu.regs.e();
-                    let new_value = cpu.add(value);
-                    cpu.regs.set_e(new_value);
-                    cpu.pc.wrapping_add(1)
-
-                },ArithmeticTarget::H => {
-                    let value = cpu.regs.h();
-                    let new_value = cpu.add(value);
-                    cpu.regs.set_h(new_value);
-                    cpu.pc.wrapping_add(1)
-
-                },ArithmeticTarget::L => {
-                    let value = cpu.regs.l();
-                    let new_value = cpu.add(value);
-                    cpu.regs.set_l(new_value);
-                    cpu.pc.wrapping_add(1)
-                }
                 
-                _ => {/*more targets*/ cpu.pc}
+                ArithmeticSource16::BC => {
+                    let value = cpu.regs.get_bc();
+                    let new_val = cpu.add_hl_rr(value);
+                    cpu.regs.set_hl(new_val);
+                    cpu.pc.wrapping_add(1)
+                },
+                ArithmeticSource16::DE => {
+                    let value = cpu.regs.get_de();
+                    let new_val = cpu.add_hl_rr(value);
+                    cpu.regs.set_hl(new_val);
+                    cpu.pc.wrapping_add(1)
+                },
+                ArithmeticSource16::HL => {
+                    let value = cpu.regs.get_hl();
+                    let new_val = cpu.add_hl_rr(value);
+                    cpu.regs.set_hl(new_val);
+                    cpu.pc.wrapping_add(1)
+                },
+                
+
+                _ => {cpu.pc}
             }
         }
 
-
         Instruction::SUB(ArithmeticTarget) => {
-            
-            match ArithmeticTarget {
-                ArithmeticTarget::A => {
-                    let value = cpu.regs.a();
-                    let new_value = cpu.sub(value);
-                    cpu.regs.set_a(new_value);
-                    cpu.pc.wrapping_add(1)
-
-                },
-                ArithmeticTarget::B => {
-                    let value = cpu.regs.b();
-                    let new_value = cpu.sub(value);
-                    cpu.regs.set_b(new_value);
-                    cpu.pc.wrapping_add(1)
-
-                },
-                ArithmeticTarget::C => {
-                    let value = cpu.regs.c();
-                    let new_value = cpu.sub(value);
-                    cpu.regs.set_c(new_value);
-                    cpu.pc.wrapping_add(1)
-
-                },ArithmeticTarget::D => {
-                    let value = cpu.regs.d();
-                    let new_value = cpu.sub(value);
-                    cpu.regs.set_d(new_value);
-                    cpu.pc.wrapping_add(1)
-
-                },ArithmeticTarget::E => {
-                    let value = cpu.regs.e();
-                    let new_value = cpu.sub(value);
-                    cpu.regs.set_e(new_value);
-                    cpu.pc.wrapping_add(1)
-
-                },ArithmeticTarget::H => {
-                    let value = cpu.regs.h();
-                    let new_value = cpu.sub(value);
-                    cpu.regs.set_h(new_value);
-                    cpu.pc.wrapping_add(1)
-
-                },ArithmeticTarget::L => {
-                    let value = cpu.regs.l();
-                    let new_value = cpu.sub(value);
-                    cpu.regs.set_l(new_value);
-                    cpu.pc.wrapping_add(1)
-                }
-                
-                _ => {/*more targets*/ cpu.pc}
-            }
+            let value = match ArithmeticTarget {
+                ArithmeticTarget::A => cpu.regs.a(),
+                ArithmeticTarget::B => cpu.regs.b(),
+                ArithmeticTarget::C => cpu.regs.c(),
+                ArithmeticTarget::D => cpu.regs.d(),
+                ArithmeticTarget::E => cpu.regs.e(),
+                ArithmeticTarget::H => cpu.regs.h(),
+                ArithmeticTarget::L => cpu.regs.l(),
+            };
+            let new_value = cpu.sub(value);
+            cpu.regs.set_a(new_value);
+            cpu.pc.wrapping_add(1)
         }
 
         Instruction::LD(loadType) => {
