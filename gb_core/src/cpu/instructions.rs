@@ -43,7 +43,10 @@ pub enum Instruction {
     ADD(ArithmeticTarget),
     ADD16(Add16Target),
     SUB(ArithmeticTarget),
+    INC(ArithmeticTarget),
+    DEC(ArithmeticTarget),
     JP(JumpTest),
+    JR(JumpTest),
     LD(LoadType),
     PUSH(StackTargets),
     POP(StackTargets),
@@ -196,6 +199,13 @@ impl Instruction {
 
             // LD HL, SP+e8
             0xF8 => Some(Self::LD(LoadType::SP8toHL)),
+
+            // JR e8 / JR cc,e8
+            0x18 => Some(Self::JR(JumpTest::Always)),
+            0x20 => Some(Self::JR(JumpTest::NotZero)),
+            0x28 => Some(Self::JR(JumpTest::Zero)),
+            0x30 => Some(Self::JR(JumpTest::NotCarry)),
+            0x38 => Some(Self::JR(JumpTest::Carry)),
 
             // SUB r, r instructions here
             0x90 => Some(Self::SUB(ArithmeticTarget::B)),

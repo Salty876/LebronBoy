@@ -4,7 +4,7 @@ use super::instructions::*;
 
 // Helper functions for conditional
 
-fn conditional_jump(test: JumpTest, cpu: &Cpu) -> bool {
+fn condition(test: JumpTest, cpu: &Cpu) -> bool {
     match test {
         JumpTest::NotZero => !cpu.regs.get_z(),
         JumpTest::Zero => cpu.regs.get_z(),
@@ -43,6 +43,17 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
                 JumpTest::Always => true,
             };
             if cond { cpu.next_word() } else { cpu.pc.wrapping_add(3) }
+        }
+
+        Instruction::JR(test) => {
+            let cond =condition(test, cpu);
+            let offset = cpu.next_byte() as i8 as i16;
+            if cond {
+                let target = cpu.pc.wrapping_add(2).wrapping_add(offset as u16);
+                target
+            } else {
+                cpu.pc.wrapping_add(2)
+            }
         }
 
         Instruction::CALL(test) => {
@@ -123,6 +134,104 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
             match target {
                 ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
                 _ => cpu.pc.wrapping_add(1),
+            }
+        }
+
+        Instruction::INC(target) => {
+            match target {
+                ArithmeticTarget::B => {
+                    let value = cpu.regs.b();
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    cpu.regs.set_b(new_value);
+
+                    // set flags
+                    cpu.regs.set_z(new_value == 0);
+                    cpu.regs.set_n(false);
+                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+
+                    cpu.pc.wrapping_add(1)
+                },
+
+                ArithmeticTarget::C => {
+                    let value = cpu.regs.c();
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    cpu.regs.set_c(new_value);
+
+                    // set flags
+                    cpu.regs.set_z(new_value == 0);
+                    cpu.regs.set_n(false);
+                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+
+                    cpu.pc.wrapping_add(1)
+                },
+
+                ArithmeticTarget::D => {
+                    let value = cpu.regs.d();
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    cpu.regs.set_d(new_value);
+
+                    // set flags
+                    cpu.regs.set_z(new_value == 0);
+                    cpu.regs.set_n(false);
+                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+
+                    cpu.pc.wrapping_add(1)
+                },
+
+                ArithmeticTarget::E => {
+                    let value = cpu.regs.e();
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    cpu.regs.set_e(new_value);
+
+                    // set flags
+                    cpu.regs.set_z(new_value == 0);
+                    cpu.regs.set_n(false);
+                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+
+                    cpu.pc.wrapping_add(1)
+                },
+
+                ArithmeticTarget::F => {
+                    let value = cpu.regs.f();
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    cpu.regs.set_f(new_value);
+
+                    // set flags
+                    cpu.regs.set_z(new_value == 0);
+                    cpu.regs.set_n(false);
+                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+
+                    cpu.pc.wrapping_add(1)
+                },
+
+                ArithmeticTarget::H => {
+                    let value = cpu.regs.h();
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    cpu.regs.set_h(new_value);
+
+                    // set flags
+                    cpu.regs.set_z(new_value == 0);
+                    cpu.regs.set_n(false);
+                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+
+                    cpu.pc.wrapping_add(1)
+                },
+
+                ArithmeticTarget::L => {
+                    let value = cpu.regs.l();
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    cpu.regs.set_l(new_value);
+
+                    // set flags
+                    cpu.regs.set_z(new_value == 0);
+                    cpu.regs.set_n(false);
+                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+
+                    cpu.pc.wrapping_add(1)
+                },
+
+
+                _ => {cpu.pc} // To be implemented
             }
         }
 
