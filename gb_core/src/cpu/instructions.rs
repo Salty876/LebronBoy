@@ -45,6 +45,8 @@ pub enum Instruction {
     SUB(ArithmeticTarget),
     INC(ArithmeticTarget),
     DEC(ArithmeticTarget),
+    INC16(Add16Target),
+    DEC16(Add16Target),
     JP(JumpTest),
     JR(JumpTest),
     LD(LoadType),
@@ -105,6 +107,34 @@ impl Instruction {
             0x86 => Some(Self::ADD(ArithmeticTarget::HLI)),
             0x87 => Some(Self::ADD(ArithmeticTarget::A)),
             0xC6 => Some(Self::ADD(ArithmeticTarget::D8)),
+
+            // INC r / DEC r (8-bit)
+            0x04 => Some(Self::INC(ArithmeticTarget::B)),
+            0x0C => Some(Self::INC(ArithmeticTarget::C)),
+            0x14 => Some(Self::INC(ArithmeticTarget::D)),
+            0x1C => Some(Self::INC(ArithmeticTarget::E)),
+            0x24 => Some(Self::INC(ArithmeticTarget::H)),
+            0x2C => Some(Self::INC(ArithmeticTarget::L)),
+            0x34 => Some(Self::INC(ArithmeticTarget::HLI)),
+            0x3C => Some(Self::INC(ArithmeticTarget::A)),
+            0x05 => Some(Self::DEC(ArithmeticTarget::B)),
+            0x0D => Some(Self::DEC(ArithmeticTarget::C)),
+            0x15 => Some(Self::DEC(ArithmeticTarget::D)),
+            0x1D => Some(Self::DEC(ArithmeticTarget::E)),
+            0x25 => Some(Self::DEC(ArithmeticTarget::H)),
+            0x2D => Some(Self::DEC(ArithmeticTarget::L)),
+            0x35 => Some(Self::DEC(ArithmeticTarget::HLI)),
+            0x3D => Some(Self::DEC(ArithmeticTarget::A)),
+
+            // INC rr / DEC rr (16-bit)
+            0x03 => Some(Self::INC16(Add16Target::BC)),
+            0x13 => Some(Self::INC16(Add16Target::DE)),
+            0x23 => Some(Self::INC16(Add16Target::HL)),
+            0x33 => Some(Self::INC16(Add16Target::SP)),
+            0x0B => Some(Self::DEC16(Add16Target::BC)),
+            0x1B => Some(Self::DEC16(Add16Target::DE)),
+            0x2B => Some(Self::DEC16(Add16Target::HL)),
+            0x3B => Some(Self::DEC16(Add16Target::SP)),
 
             // ADD HL, rr
             0x09 => Some(Self::ADD16(Add16Target::BC)),

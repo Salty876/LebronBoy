@@ -216,12 +216,24 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
 
                     cpu.pc.wrapping_add(1)
                 },
+                ArithmeticTarget::HLI => {
+                    let addr = cpu.regs.get_hl();
+                    let value = cpu.bus.read_byte(addr);
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    cpu.bus.write_byte(addr, new_value);
+
+                    // set flags
+                    cpu.regs.set_z(new_value == 0);
+                    cpu.regs.set_n(false);
+                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+
+                    cpu.pc.wrapping_add(1)
+                },
 
 
                 _ => {cpu.pc} // To be implemented
             }
         }
-
 
         Instruction::DEC(target) => {
             match target {
@@ -232,8 +244,8 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
 
                     // set flags
                     cpu.regs.set_z(new_value == 0);
-                    cpu.regs.set_n(false);
-                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+                    cpu.regs.set_n(true);
+                    cpu.regs.set_hc((value & 0x0F) == 0);
 
                     cpu.pc.wrapping_add(1)
                 },
@@ -245,8 +257,8 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
 
                     // set flags
                     cpu.regs.set_z(new_value == 0);
-                    cpu.regs.set_n(false);
-                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+                    cpu.regs.set_n(true);
+                    cpu.regs.set_hc((value & 0x0F) == 0);
 
                     cpu.pc.wrapping_add(1)
                 },
@@ -258,8 +270,8 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
 
                     // set flags
                     cpu.regs.set_z(new_value == 0);
-                    cpu.regs.set_n(false);
-                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+                    cpu.regs.set_n(true);
+                    cpu.regs.set_hc((value & 0x0F) == 0);
 
                     cpu.pc.wrapping_add(1)
                 },
@@ -271,8 +283,8 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
 
                     // set flags
                     cpu.regs.set_z(new_value == 0);
-                    cpu.regs.set_n(false);
-                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+                    cpu.regs.set_n(true);
+                    cpu.regs.set_hc((value & 0x0F) == 0);
 
                     cpu.pc.wrapping_add(1)
                 },
@@ -284,8 +296,8 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
 
                     // set flags
                     cpu.regs.set_z(new_value == 0);
-                    cpu.regs.set_n(false);
-                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+                    cpu.regs.set_n(true);
+                    cpu.regs.set_hc((value & 0x0F) == 0);
 
                     cpu.pc.wrapping_add(1)
                 },
@@ -297,8 +309,21 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
 
                     // set flags
                     cpu.regs.set_z(new_value == 0);
-                    cpu.regs.set_n(false);
-                    cpu.regs.set_hc((value & 0x0F) + 1 > 0x0F);
+                    cpu.regs.set_n(true);
+                    cpu.regs.set_hc((value & 0x0F) == 0);
+
+                    cpu.pc.wrapping_add(1)
+                },
+                ArithmeticTarget::HLI => {
+                    let addr = cpu.regs.get_hl();
+                    let value = cpu.bus.read_byte(addr);
+                    let (new_value, did_overflow) = value.overflowing_sub(1);
+                    cpu.bus.write_byte(addr, new_value);
+
+                    // set flags
+                    cpu.regs.set_z(new_value == 0);
+                    cpu.regs.set_n(true);
+                    cpu.regs.set_hc((value & 0x0F) == 0x00);
 
                     cpu.pc.wrapping_add(1)
                 },
@@ -308,6 +333,69 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
             }
         }
 
+        Instruction::INC16(target) => {
+            match target {
+                Add16Target::BC => {
+                    let value = cpu.regs.get_bc();
+                    let new_value = value.wrapping_add(1);
+                    cpu.regs.set_bc(new_value);
+                    cpu.pc.wrapping_add(1)
+                },
+
+                Add16Target::DE => {
+                    let value = cpu.regs.get_de();
+                    let new_value = value.wrapping_add(1);
+                    cpu.regs.set_de(new_value);
+                    cpu.pc.wrapping_add(1)
+                },
+
+                Add16Target::HL => {
+                    let value = cpu.regs.get_hl();
+                    let new_value = value.wrapping_add(1);
+                    cpu.regs.set_hl(new_value);
+                    cpu.pc.wrapping_add(1)
+                },
+
+                Add16Target::SP => {
+                    let value = cpu.sp;
+                    let new_value = value.wrapping_add(1);
+                    cpu.sp = new_value;
+                    cpu.pc.wrapping_add(1)
+                },
+            }
+        },
+
+        Instruction::DEC16(target) => {
+            match target {
+                Add16Target::BC => {
+                    let value = cpu.regs.get_bc();
+                    let new_value = value.wrapping_sub(1);
+                    cpu.regs.set_bc(new_value);
+                    cpu.pc.wrapping_add(1)
+                },
+
+                Add16Target::DE => {
+                    let value = cpu.regs.get_de();
+                    let new_value = value.wrapping_sub(1);
+                    cpu.regs.set_de(new_value);
+                    cpu.pc.wrapping_add(1)
+                },
+
+                Add16Target::HL => {
+                    let value = cpu.regs.get_hl();
+                    let new_value = value.wrapping_sub(1);
+                    cpu.regs.set_hl(new_value);
+                    cpu.pc.wrapping_add(1)
+                },
+
+                Add16Target::SP => {
+                    let value = cpu.sp;
+                    let new_value = value.wrapping_sub(1);
+                    cpu.sp = new_value;
+                    cpu.pc.wrapping_add(1)
+                },
+            }
+        }
 
         Instruction::LD(loadType) => {
             match loadType{
@@ -395,7 +483,7 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
                     // set flags
                     cpu.regs.set_z(false);
                     cpu.regs.set_n(false);
-                    cpu.regs.set_carry((((sp_low & 0xFF) + ((offset_up as u16) & 0xFF)) > 0xFF));
+                    cpu.regs.set_carry(((sp_low & 0xFF) + ((offset_up as u16) & 0xFF)) > 0xFF);
                     cpu.regs.set_hc(((sp_low & 0x0F) + ((offset_up as u16) & 0x0F)) > 0x0F);
 
 
