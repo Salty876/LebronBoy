@@ -15,6 +15,13 @@ pub struct Cpu {
     pub sp: u16,
     pub bus: Bus,
     pub halted: bool,
+
+    pub ime: bool,
+    pub ime_scheduled: bool,
+
+    pub fetch_pc: u16,
+    pub fetch_pc_valid: bool,
+    pub halt_bug: bool
 }
 
 impl Cpu {
@@ -25,35 +32,123 @@ impl Cpu {
             sp: 0xFFFE,
             bus: Bus::new(),
             halted: false,
+
+            ime: false,
+            ime_scheduled: false,
+
+            fetch_pc: 0,
+            fetch_pc_valid: false,
+            halt_bug: false,
+
         }
     }
 
+
+    #[inline]
+    fn begin_instruction(&mut self) {
+        self.fetch_pc = self.pc;
+        self.fetch_pc_valid = true;
+    }
+
+    #[inline]
+    fn end_instruction(&mut self) {
+        self.pc = self.fetch_pc;
+        self.fetch_pc_valid = false;
+    }
+
+    #[inline]
+    pub fn fetch_u8(&mut self) -> u8 {
+        if !self.fetch_pc_valid {
+            self.begin_instruction();
+        }
+
+        let v = self.bus.read_byte(self.fetch_pc);
+
+        // HALT bug: suppress ONE increment on the *next instruction's first fetch*
+        if self.halt_bug {
+            self.halt_bug = false;
+        } else {
+            self.fetch_pc = self.fetch_pc.wrapping_add(1);
+        }
+
+        v
+    }
+
+    #[inline]
+    pub fn fetch_u16(&mut self) -> u16 {
+        let lo = self.fetch_u8() as u16;
+        let hi = self.fetch_u8() as u16;
+        lo | (hi << 8)
+    }
+
+
+
+    // Inturupys helper funcs
+    fn pending_mask(&self) -> u8 {
+        let ie = self.bus.read_byte(0xFFFF);
+        let iflag = self.bus.read_byte(0xFF0F);
+        (ie & iflag) & 0x1F
+    }
+
+    fn highest_priority(mask: u8) -> Option<(u8, u16)> {
+        if mask & 0x01 != 0 { return Some((0x01, 0x0040)); } // VBlank
+        if mask & 0x02 != 0 { return Some((0x02, 0x0048)); } // LCD
+        if mask & 0x04 != 0 { return Some((0x04, 0x0050)); } // Timer
+        if mask & 0x08 != 0 { return Some((0x08, 0x0058)); } // Serial
+        if mask & 0x10 != 0 { return Some((0x10, 0x0060)); } // Joypad
+        None
+    }
+
+
     pub fn step(&mut self) {
+        let pending = self.pending_mask();
+        
+        if self.halted && pending != 0 {
+            self.halted = false;
+        }
         if self.halted {
             return;
         }
 
-        let mut opcode = self.bus.read_byte(self.pc);
-        let prefixed = opcode == 0xCB;
-        if prefixed {
-            opcode = self.bus.read_byte(self.pc.wrapping_add(1));
-        }
+        
 
+       self.begin_instruction();
+       let start_pc = self.pc;
+       
+       let mut opcode = self.fetch_u8();
+       let prefixed = opcode == 0xCB; 
+       
+       if prefixed {
+        opcode = self.fetch_u8();
+        }
+        
         let instr = Instruction::decode(opcode, prefixed)
-            .unwrap_or_else(|| panic!("Unknown opcode: 0x{:02X} (prefixed={})", opcode, prefixed));
+        .unwrap_or_else(|| panic!("Unknown opcode: 0x{:02X} (prefixed={})", opcode, prefixed));
 
         let next_pc = execute(self, instr, prefixed);
-        self.pc = next_pc;
+
+        // Only override when execute actually changes control flow.
+        // If it returns the original start pc, keep sequential fetch_pc.
+        if next_pc != self.fetch_pc {
+        self.fetch_pc = next_pc;
+        }
+
+self.end_instruction();
+       
+        if self.ime_scheduled {
+            self.ime = true;
+            self.ime_scheduled = false;
+        }
     }
 
     #[inline]
-    pub fn next_byte(&self) -> u8 {
-        self.bus.read_byte(self.pc.wrapping_add(1))
+    pub fn next_byte(&mut self) -> u8 {
+        self.fetch_u8()
     }
 
     #[inline]
-    pub fn next_word(&self) -> u16 {
-        self.bus.read_word(self.pc.wrapping_add(1))
+    pub fn next_word(&mut self) -> u16 {
+        self.fetch_u16()
     }
 
     #[inline]

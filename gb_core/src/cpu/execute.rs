@@ -72,8 +72,21 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
         Instruction::NOP => cpu.pc.wrapping_add(1),
 
         Instruction::HALT => {
-            cpu.halted = true;
-            cpu.pc
+
+           
+            let pending = cpu.pending_mask();
+
+            if !cpu.ime && pending != 0 {
+                // HALT bug: do NOT halt, but glitch next fetch
+                cpu.halt_bug = true;
+                cpu.halted = false;
+            } else {
+                cpu.halted = true;
+            }
+
+
+
+            cpu.fetch_pc
         }
 
         Instruction::JP(test) => {

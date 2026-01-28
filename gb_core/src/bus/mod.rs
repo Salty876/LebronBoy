@@ -1,21 +1,48 @@
 #[derive(Clone)]
 pub struct Bus {
     pub memory: [u8; 0x10000],
+    ie: u8,
+    i_flag: u8,
 }
 
 impl Bus {
     pub fn new() -> Self {
-        Self { memory: [0; 0x10000] }
+        Self { memory: [0; 0x10000], ie: 0, i_flag: 0 }
     }
 
     #[inline]
     pub fn read_byte(&self, addr: u16) -> u8 {
-        self.memory[addr as usize]
+        match addr {
+            0xFF0F => self.i_flag | 0xE0,
+            0xFFFF => self.ie,
+            _ => self.memory[addr as usize]
+        }
+        
     }
 
     #[inline]
     pub fn write_byte(&mut self, addr: u16, value: u8) {
-        self.memory[addr as usize] = value;
+
+        match addr {
+        0xFF0F => {
+            self.i_flag = value & 0x1F;
+        }
+        0xFFFF => {
+            self.ie = value & 0x1F;
+        }
+        _ => {
+            self.memory[addr as usize] = value;
+        }
+    }
+        
+    }
+
+    pub fn request_interrupt(&mut self, bit: u8) {
+        self.i_flag |= bit & 0x1F;
+    }
+
+    pub fn clear_interrupt(&mut self, bit: u8) {
+        self.i_flag &= !(bit & 0x1F);
     }
 
     #[inline]
