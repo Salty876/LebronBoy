@@ -64,6 +64,10 @@ pub enum Instruction {
     RLA(ArithmeticTarget),
     RRCA(ArithmeticTarget),
     RRA(ArithmeticTarget),
+    CPL,
+    SCF,
+    CCF,
+    DAA,
     NOP,
     HALT,
 }
@@ -323,7 +327,17 @@ impl Instruction {
             0xBF => Some(Self::CP(ArithmeticTarget::A)),
             0xFE => Some(Self::CP(ArithmeticTarget::D8)),
 
+            // CPL / SCF / CCF / DAA
+            0x2F => Some(Self::CPL),
+            0x37 => Some(Self::SCF),
+            0x3F => Some(Self::CCF),
+            0x27 => Some(Self::DAA),
 
+            // RLCA / RLA / RRCA / RRA
+            0x07 => Some(Self::RLCA(ArithmeticTarget::A)),
+            0x17 => Some(Self::RLA(ArithmeticTarget::A)),
+            0x0F => Some(Self::RRCA(ArithmeticTarget::A)),
+            0x1F => Some(Self::RRA(ArithmeticTarget::A)),
 
             _ => None,
         }

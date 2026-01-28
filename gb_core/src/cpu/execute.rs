@@ -1,11 +1,13 @@
 use core::task;
 use std::result;
 
+use crate::cpu;
+
 use super::{Cpu};
 use super::instructions::*;
 
 
-// Helper functions for conditional and getting targets
+// Helper functions for conditional and getting targets and daa
 
 fn condition(test: JumpTest, cpu: &Cpu) -> bool {
     match test {
@@ -31,8 +33,30 @@ fn read_u8_target(cpu: &mut Cpu, t: ArithmeticTarget) -> u8 {
     }
 }
 
+fn daa(cpu: &mut Cpu) {
+    let mut a = cpu.regs.a();
+    let mut adjust = 0;
+    let mut carry = false;
 
+    if cpu.regs.get_hc() || (!cpu.regs.get_n() && (a & 0x0F) > 9) {
+        adjust |= 0x06;
+    }
+    if cpu.regs.get_carry() || (!cpu.regs.get_n() && a > 0x99) {
+        adjust |= 0x60;
+        carry = true;
+    }
 
+    if cpu.regs.get_n() {
+        a = a.wrapping_sub(adjust);
+    } else {
+        a = a.wrapping_add(adjust);
+    }
+
+    cpu.regs.set_a(a);
+    cpu.regs.set_z(a == 0);
+    cpu.regs.set_hc(false);
+    cpu.regs.set_carry(carry);
+}
 
 
 
@@ -698,6 +722,43 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
                 ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
                 _ => cpu.pc.wrapping_add(1)
             }
+        }
+
+        Instruction::CPL => {
+            let a = cpu.regs.a();
+            let result = !a;
+            cpu.regs.set_a(result);
+
+            // Set flags
+            cpu.regs.set_n(true);
+            cpu.regs.set_hc(true);
+
+            cpu.pc.wrapping_add(1)
+        }
+
+        Instruction::SCF => {
+            // Set flags
+            cpu.regs.set_n(false);
+            cpu.regs.set_hc(false);
+            cpu.regs.set_carry(true);
+
+            cpu.pc.wrapping_add(1)
+        }
+
+        Instruction::CCF => {
+            let current_carry = cpu.regs.get_carry();
+
+            // Set flags
+            cpu.regs.set_n(false);
+            cpu.regs.set_hc(false);
+            cpu.regs.set_carry(!current_carry);
+
+            cpu.pc.wrapping_add(1)
+        }
+
+        Instruction::DAA => {
+            daa(cpu);
+            cpu.pc.wrapping_add(1)
         }
 
     _ => cpu.pc}
