@@ -1,3 +1,4 @@
+use core::task;
 use std::result;
 
 use super::{Cpu};
@@ -623,6 +624,82 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
                 _ => cpu.pc.wrapping_add(1),
             }
         }
+    
+        Instruction::RLCA(target) => {
+            let a = cpu.regs.a();
+            let carry_out = (a & 0x80) >> 7;
+            let result = (a << 1) | carry_out;
+            cpu.regs.set_a(result);
+
+            // Set flags
+            cpu.regs.set_z(false);
+            cpu.regs.set_n(false);
+            cpu.regs.set_hc(false);
+            cpu.regs.set_carry(carry_out == 1);
+
+            match target {
+                ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
+                _ => cpu.pc.wrapping_add(1)
+            }
+            
+        }
+
+        Instruction::RRCA(target) => {
+            let a = cpu.regs.a();
+            let carry_out = a & 0x01;
+            let result = (a >> 1) | (carry_out << 7);
+            cpu.regs.set_a(result);
+
+            // Set flags
+            cpu.regs.set_z(false);
+            cpu.regs.set_n(false);
+            cpu.regs.set_hc(false);
+            cpu.regs.set_carry(carry_out == 1);
+
+            match target {
+                ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
+                _ => cpu.pc.wrapping_add(1)
+            }
+        }
+
+        Instruction::RLA(target) => {
+            let a = cpu.regs.a();
+            let carry_in = if cpu.regs.get_carry() { 1 } else { 0 };
+            let carry_out = (a & 0x80) >> 7;
+            let result = (a << 1) | carry_in;
+            cpu.regs.set_a(result);
+
+            // Set flags
+            cpu.regs.set_z(false);
+            cpu.regs.set_n(false);
+            cpu.regs.set_hc(false);
+            cpu.regs.set_carry(carry_out == 1);
+
+            match target {
+                ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
+                _ => cpu.pc.wrapping_add(1)
+            }
+        }
+
+        Instruction::RRA(target) => {
+            let a = cpu.regs.a();
+            let carry_in = if cpu.regs.get_carry() { 1 } else { 0 };
+            let carry_out = a & 0x01;
+            let result = (a >> 1) | (carry_in << 7);
+            cpu.regs.set_a(result);
+
+            // Set flags
+            cpu.regs.set_z(false);
+            cpu.regs.set_n(false);
+            cpu.regs.set_hc(false);
+            cpu.regs.set_carry(carry_out == 1);
+
+            match target {
+                ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
+                _ => cpu.pc.wrapping_add(1)
+            }
+        }
+
     _ => cpu.pc}
 }
 

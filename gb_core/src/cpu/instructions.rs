@@ -60,6 +60,10 @@ pub enum Instruction {
     OR(ArithmeticTarget),
     CALL(JumpTest),
     RET(JumpTest),
+    RLCA(ArithmeticTarget),
+    RLA(ArithmeticTarget),
+    RRCA(ArithmeticTarget),
+    RRA(ArithmeticTarget),
     NOP,
     HALT,
 }
