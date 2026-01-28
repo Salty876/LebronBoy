@@ -43,6 +43,8 @@ pub enum Instruction {
     ADD(ArithmeticTarget),
     ADD16(Add16Target),
     SUB(ArithmeticTarget),
+    ADC(ArithmeticTarget),
+    SBC(ArithmeticTarget),
     INC(ArithmeticTarget),
     DEC(ArithmeticTarget),
     INC16(Add16Target),
@@ -111,6 +113,17 @@ impl Instruction {
             0x86 => Some(Self::ADD(ArithmeticTarget::HLI)),
             0x87 => Some(Self::ADD(ArithmeticTarget::A)),
             0xC6 => Some(Self::ADD(ArithmeticTarget::D8)),
+
+            // ADC A, r / (HL) / d8
+            0x88 => Some(Self::ADC(ArithmeticTarget::B)),
+            0x89 => Some(Self::ADC(ArithmeticTarget::C)),
+            0x8A => Some(Self::ADC(ArithmeticTarget::D)),
+            0x8B => Some(Self::ADC(ArithmeticTarget::E)),
+            0x8C => Some(Self::ADC(ArithmeticTarget::H)),
+            0x8D => Some(Self::ADC(ArithmeticTarget::L)),
+            0x8E => Some(Self::ADC(ArithmeticTarget::HLI)),
+            0x8F => Some(Self::ADC(ArithmeticTarget::A)),
+            0xCE => Some(Self::ADC(ArithmeticTarget::D8)),
 
             // INC r / DEC r (8-bit)
             0x04 => Some(Self::INC(ArithmeticTarget::B)),
@@ -251,6 +264,17 @@ impl Instruction {
             0x96 => Some(Self::SUB(ArithmeticTarget::HLI)),
             0x97 => Some(Self::SUB(ArithmeticTarget::A)),
             0xD6 => Some(Self::SUB(ArithmeticTarget::D8)),
+
+            // SBC A, r / (HL) / d8
+            0x98 => Some(Self::SBC(ArithmeticTarget::B)),
+            0x99 => Some(Self::SBC(ArithmeticTarget::C)),
+            0x9A => Some(Self::SBC(ArithmeticTarget::D)),
+            0x9B => Some(Self::SBC(ArithmeticTarget::E)),
+            0x9C => Some(Self::SBC(ArithmeticTarget::H)),
+            0x9D => Some(Self::SBC(ArithmeticTarget::L)),
+            0x9E => Some(Self::SBC(ArithmeticTarget::HLI)),
+            0x9F => Some(Self::SBC(ArithmeticTarget::A)),
+            0xDE => Some(Self::SBC(ArithmeticTarget::D8)),
 
             // AND r / (HL) / d8
             0xA0 => Some(Self::AND(ArithmeticTarget::B)),

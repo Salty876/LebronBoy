@@ -122,6 +122,29 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
             }
         }
 
+        Instruction::ADC(target) => {
+            let carry = if cpu.regs.get_carry() { 1 } else { 0 };
+
+            let value = read_u8_target(cpu, target);
+
+            let a = cpu.regs.a();
+
+            let result = a.wrapping_add(value).wrapping_add(carry);
+            cpu.regs.set_a(result);
+
+            // Set flags
+            cpu.regs.set_z(result == 0);
+            cpu.regs.set_n(false);
+            cpu.regs.set_hc(((a & 0x0F) + (value & 0x0F) + carry) > 0x0F);
+            cpu.regs.set_carry((a as u16) + (value as u16) + (carry as u16) > 0xFF);
+
+            match target {
+                ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
+                _ => cpu.pc.wrapping_add(1)
+            }
+
+        }
+
         Instruction::ADD16(target) => {
             let value = match target {
                 Add16Target::BC => cpu.regs.get_bc(),
@@ -152,6 +175,29 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
                 ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
                 _ => cpu.pc.wrapping_add(1),
             }
+        }
+
+        Instruction::SBC(target) => {
+            let carry = if cpu.regs.get_carry() { 1 } else { 0 };
+
+            let value = read_u8_target(cpu, target);
+
+            let a = cpu.regs.a();
+
+            let result = a.wrapping_sub(value).wrapping_sub(carry);
+            cpu.regs.set_a(result);
+
+            // Set flags
+            cpu.regs.set_z(result == 0);
+            cpu.regs.set_n(true);
+            cpu.regs.set_hc((a & 0x0F) < (value & 0x0F) + carry);
+            cpu.regs.set_carry((a as u16) < (value as u16) + (carry as u16));
+
+            match target {
+                ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
+                _ => cpu.pc.wrapping_add(1)
+            }
+
         }
 
         Instruction::INC(target) => {
@@ -380,7 +426,7 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
                     cpu.pc.wrapping_add(1)
                 },
             }
-        },
+        }
 
         Instruction::DEC16(target) => {
             match target {
