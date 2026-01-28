@@ -1,8 +1,10 @@
+use std::result;
+
 use super::{Cpu};
 use super::instructions::*;
 
 
-// Helper functions for conditional
+// Helper functions for conditional and getting targets
 
 fn condition(test: JumpTest, cpu: &Cpu) -> bool {
     match test {
@@ -13,6 +15,21 @@ fn condition(test: JumpTest, cpu: &Cpu) -> bool {
         JumpTest::Always => true,
     }
 }
+
+fn read_u8_target(cpu: &mut Cpu, t: ArithmeticTarget) -> u8 {
+    match t {
+        ArithmeticTarget::A => cpu.regs.a(),
+        ArithmeticTarget::B => cpu.regs.b(),
+        ArithmeticTarget::C => cpu.regs.c(),
+        ArithmeticTarget::D => cpu.regs.d(),
+        ArithmeticTarget::E => cpu.regs.e(),
+        ArithmeticTarget::H => cpu.regs.h(),
+        ArithmeticTarget::L => cpu.regs.l(),
+        ArithmeticTarget::HLI => cpu.bus.read_byte(cpu.regs.get_hl()),
+        ArithmeticTarget::D8 => cpu.next_byte(),
+    }
+}
+
 
 
 
@@ -497,6 +514,69 @@ pub fn execute(cpu: &mut Cpu, instr: Instruction, prefixed: bool) -> u16 {
         
     }
 
+        Instruction::XOR(target) => {
+            let value = read_u8_target(cpu, target);
+            let result = cpu.regs.a() ^ value;
+            cpu.regs.set_a(result);
+
+            // Set flags
+            cpu.regs.set_z(result == 0);
+            cpu.regs.set_n(false);
+            cpu.regs.set_hc(false);
+            cpu.regs.set_carry(false);
+
+            match target {
+                ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
+                _ => cpu.pc.wrapping_add(1),
+            }
+        }
+
+        Instruction::CP(target) => {
+            let value = read_u8_target(cpu, target);
+            // Sets flags
+            cpu.sub(value);
+
+            match target {
+                ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
+                _ => cpu.pc.wrapping_add(1),
+            }
+        }
+
+        Instruction::AND(target) => {
+            let value = read_u8_target(cpu, target);
+
+            let result = cpu.regs.a() & value;
+            cpu.regs.set_a(result);
+
+            // Set flags
+            cpu.regs.set_z(result == 0);
+            cpu.regs.set_n(false);
+            cpu.regs.set_hc(true);
+            cpu.regs.set_carry(false);
+
+            match target {
+                ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
+                _ => cpu.pc.wrapping_add(1),
+            }
+        }
+
+        Instruction::OR(target) => {
+            let value = read_u8_target(cpu, target);
+
+            let result = cpu.regs.a() | value;
+            cpu.regs.set_a(result);
+
+            // Set flags
+            cpu.regs.set_z(result == 0);
+            cpu.regs.set_n(false);
+            cpu.regs.set_hc(false);
+            cpu.regs.set_carry(false);
+
+            match target {
+                ArithmeticTarget::D8 => cpu.pc.wrapping_add(2),
+                _ => cpu.pc.wrapping_add(1),
+            }
+        }
     _ => cpu.pc}
 }
 

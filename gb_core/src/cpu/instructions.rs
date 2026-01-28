@@ -52,6 +52,10 @@ pub enum Instruction {
     LD(LoadType),
     PUSH(StackTargets),
     POP(StackTargets),
+    XOR(ArithmeticTarget),
+    CP(ArithmeticTarget),
+    AND(ArithmeticTarget),
+    OR(ArithmeticTarget),
     CALL(JumpTest),
     RET(JumpTest),
     NOP,
@@ -247,6 +251,52 @@ impl Instruction {
             0x96 => Some(Self::SUB(ArithmeticTarget::HLI)),
             0x97 => Some(Self::SUB(ArithmeticTarget::A)),
             0xD6 => Some(Self::SUB(ArithmeticTarget::D8)),
+
+            // AND r / (HL) / d8
+            0xA0 => Some(Self::AND(ArithmeticTarget::B)),
+            0xA1 => Some(Self::AND(ArithmeticTarget::C)),
+            0xA2 => Some(Self::AND(ArithmeticTarget::D)),
+            0xA3 => Some(Self::AND(ArithmeticTarget::E)),
+            0xA4 => Some(Self::AND(ArithmeticTarget::H)),
+            0xA5 => Some(Self::AND(ArithmeticTarget::L)),
+            0xA6 => Some(Self::AND(ArithmeticTarget::HLI)),
+            0xA7 => Some(Self::AND(ArithmeticTarget::A)),
+            0xE6 => Some(Self::AND(ArithmeticTarget::D8)),
+
+            0xA8 => Some(Self::XOR(ArithmeticTarget::B)),
+            0xA9 => Some(Self::XOR(ArithmeticTarget::C)),
+            0xAA => Some(Self::XOR(ArithmeticTarget::D)),
+            0xAB => Some(Self::XOR(ArithmeticTarget::E)),
+            0xAC => Some(Self::XOR(ArithmeticTarget::H)),
+            0xAD => Some(Self::XOR(ArithmeticTarget::L)),
+            0xAE => Some(Self::XOR(ArithmeticTarget::HLI)),
+            0xAF => Some(Self::XOR(ArithmeticTarget::A)),
+            0xEE => Some(Self::XOR(ArithmeticTarget::D8)),
+
+            // OR r / (HL) / d8
+            0xB0 => Some(Self::OR(ArithmeticTarget::B)),
+            0xB1 => Some(Self::OR(ArithmeticTarget::C)),
+            0xB2 => Some(Self::OR(ArithmeticTarget::D)),
+            0xB3 => Some(Self::OR(ArithmeticTarget::E)),
+            0xB4 => Some(Self::OR(ArithmeticTarget::H)),
+            0xB5 => Some(Self::OR(ArithmeticTarget::L)),
+            0xB6 => Some(Self::OR(ArithmeticTarget::HLI)),
+            0xB7 => Some(Self::OR(ArithmeticTarget::A)),
+            0xF6 => Some(Self::OR(ArithmeticTarget::D8)),
+
+            // CP r / (HL)
+            0xB8 => Some(Self::CP(ArithmeticTarget::B)),
+            0xB9 => Some(Self::CP(ArithmeticTarget::C)),
+            0xBA => Some(Self::CP(ArithmeticTarget::D)),
+            0xBB => Some(Self::CP(ArithmeticTarget::E)),
+            0xBC => Some(Self::CP(ArithmeticTarget::H)),
+            0xBD => Some(Self::CP(ArithmeticTarget::L)),
+            0xBE => Some(Self::CP(ArithmeticTarget::HLI)),
+            0xBF => Some(Self::CP(ArithmeticTarget::A)),
+            0xFE => Some(Self::CP(ArithmeticTarget::D8)),
+
+
+
             _ => None,
         }
     }
