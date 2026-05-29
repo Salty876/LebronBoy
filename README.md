@@ -22,6 +22,20 @@ A Game Boy (DMG) emulator written in Rust, featuring a clean separation between 
 
 ---
 
+## Screenshots
+
+<img width="317" height="288" alt="Screenshot 2026-05-28 192507" src="https://github.com/user-attachments/assets/abeb69b5-1c21-4a20-a640-890eaa981316" /> <img width="314" height="286" alt="Screenshot 2026-05-28 192429" src="https://github.com/user-attachments/assets/1ed50cc1-69c3-4d0d-a6fd-54f994afda53" /> <img width="318" height="290" alt="Screenshot 2026-05-28 192405" src="https://github.com/user-attachments/assets/124f5c71-a88c-41a3-a499-c0ac00d9c7d1" />
+<img width="318" height="286" alt="Screenshot 2026-05-28 192336" src="https://github.com/user-attachments/assets/261da5de-97bb-4677-bb46-e13132b83d62" /> <img width="316" height="298" alt="Screenshot 2026-05-28 192213" src="https://github.com/user-attachments/assets/4bd4f634-521c-471e-8fa4-a4cf91a1d368" />
+
+
+
+
+
+
+
+
+---
+
 ## Architecture
 
 ```
